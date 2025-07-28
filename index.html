@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متجر المكسرات</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #fffaf0;
+      color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .nav button {
+      background-color: #d4a373;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .product {
+      border: 1px solid #d4a373;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px auto;
+      width: 90%;
+      background-color: #fff;
+    }
+    select, input {
+      margin: 5px;
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 10px;
+      background-color: #bc8f5a;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛒 متجر المكسرات</h1>
+  <div class="nav">
+    <button onclick="showSection('nuts')">مكسرات</button>
+    <button onclick="showSection('sweets')">حلويات</button>
+    <button onclick="showSection('dates')">تمور</button>
+    <button onclick="showSection('yamish')">ياميش</button>
+  </div>
+
+  <div id="nuts" class="section active"></div>
+  <div id="sweets" class="section"></div>
+  <div id="dates" class="section"></div>
+  <div id="yamish" class="section"></div>
+
+  <div>
+    <h3>معلومات العميل</h3>
+    <input type="text" id="clientName" placeholder="اسمك">
+    <input type="text" id="clientPhone" placeholder="رقمك">
+    <input type="text" id="clientAddress" placeholder="عنوانك"><br>
+    <button onclick="sendAllOrders()">إرسال الطلب على واتساب</button>
+  </div>
+
+  <script>
+    const phoneNumber = "201234567890";
+
+    const products = {
+      nuts: [
+        { name: "فستق محمص", prices: { "كيلو": 240, "نص كيلو": 120 } },
+        { name: "كاجو ني", prices: { "كيلو": 300, "ربع كيلو": 75 } }
+      ],
+      sweets: [
+        { name: "بسبوسة", prices: { "كيلو": 60, "نص كيلو": 30 } }
+      ],
+      dates: [
+        { name: "تمر عجوة", prices: { "كيلو": 90, "نص كيلو": 45 } }
+      ],
+      yamish: [
+        { name: "قراصيا", prices: { "ربع كيلو": 35, "100 جرام": 15 } }
+      ]
+    };
+
+    function renderProducts() {
+      for (const category in products) {
+        const section = document.getElementById(category);
+        products[category].forEach((product, index) => {
+          const div = document.createElement("div");
+          div.className = "product";
+
+          let weightOptions = '<option value="">اختر الكمية</option>';
+          for (const weight in product.prices) {
+            const price = product.prices[weight];
+            weightOptions += `<option value="${weight}">${weight} - ${price} جنيه</option>`;
+          }
+
+          div.innerHTML = `
+            <h3>${product.name}</h3>
+            <select id="${category}_${index}">${weightOptions}</select>
+          `;
+
+          section.appendChild(div);
+        });
+      }
+    }
+
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function sendAllOrders() {
+      const clientName = document.getElementById("clientName").value;
+      const clientPhone = document.getElementById("clientPhone").value;
+      const clientAddress = document.getElementById("clientAddress").value;
+
+      let orderText = "🛒 طلب جديد من الموقع:\n\n";
+      let hasOrder = false;
+
+      for (const category in products) {
+        products[category].forEach((product, index) => {
+          const weight = document.getElementById(`${category}_${index}`).value;
+          if (weight) {
+            const price = product.prices[weight];
+            orderText += `📦 ${product.name}\n⚖️ ${weight}\n💰 ${price} جنيه\n\n`;
+            hasOrder = true;
+          }
+        });
+      }
+
+      if (!hasOrder) {
+        alert("اختر منتجًا واحدًا على الأقل!");
+        return;
+      }
+
+      orderText += `🧑 الاسم: ${clientName}\n📱 الهاتف: ${clientPhone}\n📍 العنوان: ${clientAddress}`;
+      const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(orderText)}`;
+      window.open(url, '_blank');
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>
